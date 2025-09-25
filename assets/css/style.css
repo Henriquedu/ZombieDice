@@ -1,0 +1,37 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #1c1c1c;
+  color: #f1f1f1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  text-align: center;
+  background: #2a2a2a;
+  padding: 20px;
+  border-radius: 12px;
+  width: 400px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.7);
+}
+
+button {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+#rollBtn {
+  background: #4CAF50;
+  color: white;
+}
+
+#stopBtn {
+  background: #f44336;
+  color: white;
+}
