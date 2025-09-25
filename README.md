@@ -8,11 +8,17 @@ Jogue direto no navegador e teste sua sorte: colete cérebros e evite levar 3 ti
 
 ## 📂 Estrutura do projeto
 ZombieDice/
+
 ├── index.html
+
 ├── assets/
+
 │ ├── css/
+
 │ │ └── style.css
+
 │ └── js/
+
 │ └── script.js
 
 markdown
