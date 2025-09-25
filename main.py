@@ -1,116 +1,113 @@
-from random import shuffle, choice
-from collections import namedtuple
-import time
+#!/usr/bin/env python3
+# Zombie Dice - versão terminal
+# Regras principais:
+# - 13 dados no saco: 6 verdes, 4 amarelos, 3 vermelhos
+# - Faces por cor:
+#   Green: 3 brains, 2 footprints, 1 shotgun
+#   Yellow: 2 brains, 2 footprints, 2 shotguns
+#   Red: 1 brain, 2 footprints, 3 shotguns
+# - Em cada jogada o jogador puxa 3 dados (repondo footprint para próxima rolagem).
+# - Se o jogador acumular 3 shotguns na mesma rodada, ele perde os cérebros acumulados na rodada.
+# - Quando algum jogador atinge a pontuação alvo (default 13), completa-se a rodada para todos e quem tiver mais brains vence.
 
+import random
+# === CONFIGURAÇÕES DO JOGO ===
+TARGET = 13  # Pontuação para vencer
 
-def criar_dados():
-    Dado = namedtuple("Dado", ['cor', 'lados'])
-    dado_verde = Dado('verde', ['cerebro', 'cerebro', 'cerebro', 'passo', 'passo', 'tiro'])
-    dado_vermelho = Dado('vermelho', ['cerebro', 'passo', 'passo', 'tiro', 'tiro', 'tiro'])
-    dado_amarelo = Dado('amarelo', ['cerebro', 'cerebro', 'passo', 'passo', 'tiro', 'tiro'])
+# Dados (cor + faces)
+DICE = [
+    ("green",    ["brain", "brain", "brain", "footprint", "footprint", "shotgun"]),
+    ("green",    ["brain", "brain", "brain", "footprint", "footprint", "shotgun"]),
+    ("green",    ["brain", "brain", "brain", "footprint", "footprint", "shotgun"]),
+    ("green",    ["brain", "brain", "brain", "footprint", "footprint", "shotgun"]),
+    ("green",    ["brain", "brain", "brain", "footprint", "footprint", "shotgun"]),
+    ("yellow",   ["brain", "brain", "footprint", "footprint", "shotgun", "shotgun"]),
+    ("yellow",   ["brain", "brain", "footprint", "footprint", "shotgun", "shotgun"]),
+    ("yellow",   ["brain", "brain", "footprint", "footprint", "shotgun", "shotgun"]),
+    ("yellow",   ["brain", "brain", "footprint", "footprint", "shotgun", "shotgun"]),
+    ("red",      ["brain", "footprint", "footprint", "shotgun", "shotgun", "shotgun"]),
+    ("red",      ["brain", "footprint", "footprint", "shotgun", "shotgun", "shotgun"]),
+    ("red",      ["brain", "footprint", "footprint", "shotgun", "shotgun", "shotgun"]),
+]
 
-    # Populando lista de dados
-    lista_dados = []
-    for _ in range(6):
-        lista_dados.append(dado_verde)
-    for _ in range(3):
-        lista_dados.append(dado_vermelho)
-    for _ in range(4):
-        lista_dados.append(dado_amarelo)
+# === FUNÇÕES DO JOGO ===
 
-    shuffle(lista_dados)
-    return lista_dados
+def draw_dice(bag, num):
+    random.shuffle(bag)
+    draw = []
+    while len(draw) < num and bag:
+        draw.append(bag.pop())
+    return draw
 
+def roll_die(die):
+    color, faces = die
+    return color, random.choice(faces)
 
-def criar_jogadores():
-    jogadores = []
-
-    while True:
-        try:
-            num_jogadores = int(input("Digite quantos jogadores irão jogar: "))
-            if num_jogadores > 1:
-                break
-            else:
-                print("Você precisa de no mínimo dois jogadores para jogar!")
-        except ValueError:
-            print("O número precisa ser um inteiro.")
-
-    for i in range(num_jogadores):
-        nome = input(f"Digite o nome do jogador {i+1}: ").capitalize()
-        jogador = {'nome': nome, 'pontuacao': 0}
-        jogadores.append(jogador)
-
-    shuffle(jogadores)
-    print("*** ORDEM PARA JOGAR ***")
-    n = 1
-    for jogador in jogadores:
-        print(f"{n}. {jogador['nome']}")
-        n += 1
-
-    return jogadores
-
-
-def turno(jogador):
-    print(f"\nVez do jogador {jogador['nome']}")
-    time.sleep(0.5)
-
-    lista_dados = criar_dados()
-    pontuacao_temp = {'cerebros': 0, 'tiros': 0}
-    dados_na_mao = []
+def play_round():
+    bag = DICE.copy()
+    footprints = []
+    round_brains = 0
+    round_shotguns = 0
 
     while True:
-        while len(dados_na_mao) < 3:
-            dados_na_mao.append(lista_dados.pop())
+        needed = 3 - len(footprints)
+        drawn = draw_dice(bag, needed)
+        hand = footprints + drawn
+        footprints = []
 
-        n = 1
-        for dado in reversed(dados_na_mao):
-            time.sleep(0.3)
-            print(f"Jogando dado {n}")
-            n += 1
-
-            cor = dado.cor
-            shuffle(dado.lados)
-            lado_sorteado = choice(dado.lados)
-
-            print(f"   Cor: {cor}\n   Lado: {lado_sorteado}")
-
-            # Verificando dados
-            if lado_sorteado == 'cerebro':
-                pontuacao_temp['cerebros'] += 1
-                lista_dados.append(dados_na_mao.pop(dados_na_mao.index(dado)))
-            elif lado_sorteado == 'tiro':
-                pontuacao_temp['tiros'] += 1
-                lista_dados.append(dados_na_mao.pop(dados_na_mao.index(dado)))
-            shuffle(lista_dados)
-
-        print(f"\nCérebros atuais: {pontuacao_temp['cerebros']}\nTiros atuais: {pontuacao_temp['tiros']}")
-        if pontuacao_temp['tiros'] < 3:
-            if input("\nDeseja continuar jogando? (s/n): ").upper() != 'S':
-                print(f"Você conseguiu {pontuacao_temp['cerebros']} cérebros.")
-                jogador['pontuacao'] += pontuacao_temp['cerebros']
-                break
-        else:
-            print(f"Você tomou muitos tiros e acabou perdendo {pontuacao_temp['cerebros']} cérebros.")
+        if not hand:
+            print("⚠️ Não há mais dados no saco.")
             break
 
+        print("\nRolando os dados...")
+        for d in hand:
+            color, face = roll_die(d)
+            print(f"{color.upper()} -> {face}", end=" | ")
+            if face == "brain":
+                round_brains += 1
+            elif face == "shotgun":
+                round_shotguns += 1
+            else:
+                footprints.append(d)
+        print(f"\nCérebros acumulados: {round_brains}, Tiros recebidos: {round_shotguns}")
 
-def placar(jogadores):
-    print("\n*** PLACAR ATUAL ***")
-    for jogador in jogadores:
-        print(f"{jogador['nome']}: {jogador['pontuacao']} pontos.")
+        if round_shotguns >= 3:
+            print("💥 Você levou 3 tiros! Perdeu todos os cérebros desta rodada.")
+            return 0
 
+        escolha = input("Deseja rolar novamente? (s/n): ").lower()
+        if escolha != "s":
+            print(f"Você parou com {round_brains} cérebros nesta rodada.")
+            return round_brains
 
-jogadores = criar_jogadores()
+def main():
+    print("=== Zombie Dice === 🧟🎲")
+    jogadores = []
+    n = int(input("Quantos jogadores? "))
 
-game_over = False
-while not game_over:
-    for jogador in jogadores:
-        turno(jogador)
-        if jogador['pontuacao'] >= 13:
-            vencedor = jogador['nome']
-            game_over = True
-    if not game_over:
-        placar(jogadores)
-    else:
-        print(f"\nO jogo acabou. O grande vencedor foi: {vencedor}.")
-        placar(jogadores)
+    for i in range(n):
+        nome = input(f"Nome do jogador {i+1}: ")
+        jogadores.append(nome)
+
+    pontuacoes = {j: 0 for j in jogadores}
+    final = False
+
+    while True:
+        for jogador in jogadores:
+            print(f"\n--- Vez de {jogador} ---")
+            print(f"Pontuação atual: {pontuacoes[jogador]} cérebros")
+            ganho = play_round()
+            pontuacoes[jogador] += ganho
+            print(f"{jogador} agora tem {pontuacoes[jogador]} cérebros.\n")
+
+            if pontuacoes[jogador] >= TARGET:
+                final = True
+        if final:
+            vencedor = max(pontuacoes, key=lambda x: pontuacoes[x])
+            print("🏆 FIM DE JOGO!")
+            print(f"O vencedor foi {vencedor} com {pontuacoes[vencedor]} cérebros!")
+            break
+
+# Executar o jogo
+if __name__ == "__main__":
+    main()
