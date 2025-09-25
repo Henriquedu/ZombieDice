@@ -10,27 +10,14 @@
   <div class="container">
     <h1>🧟 Zombie Dice 🎲</h1>
 
-    <!-- Configuração inicial -->
-    <div id="setup">
-      <p>Quantos jogadores?</p>
-      <input type="number" id="numPlayers" min="2" max="6" value="2">
-      <button id="startBtn">Iniciar Jogo</button>
-    </div>
-
-    <!-- Área do jogo -->
-    <div id="game" style="display:none;">
-      <p id="turn"></p>
+    <div id="game">
       <p id="status">Clique em "Rolar Dados" para começar!</p>
       <button id="rollBtn">Rolar Dados</button>
       <button id="stopBtn" disabled>Parar</button>
-      <button id="restartBtn" style="display:none;">Reiniciar</button>
-
-      <div id="results"></div>
-      <div id="score"></div>
-
-      <h2>Placar</h2>
-      <ul id="scoreboard"></ul>
     </div>
+
+    <div id="results"></div>
+    <div id="score"></div>
   </div>
 
   <script src="assets/js/script.js"></script>
